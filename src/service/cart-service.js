@@ -1,4 +1,6 @@
 const CartRepository = require('../repository/cart-repository');
+const axios = require('axios');
+const { PRODUCT_SERVICE_URL } = require('../config/serverConfig')
 
 class CartService{
     constructor() {
@@ -12,16 +14,39 @@ class CartService{
         }, 0);  
     }
 
+    async getProductDetails(productId) {
+        try {
+            const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/v1/products/${productId}`);
+
+            return response.data.data;
+        } catch (error) {
+            throw new Error('Product not found from Product Service');
+        }
+    }
+
     // Add to cart
     async addToCart(userId, product) {
+        console.log(`User ${userId} adding product ${product.productId}`);
 
-        if (!product.productId || !product.quantity || !product.price) {
+        if (!product.productId || !product.quantity) {
             throw new Error('Invalid product data');
         }
 
         if (product.quantity <= 0) {
             throw new Error('Quantity must be greater than 0');
         }
+
+        const productData = await this.getProductDetails(product.productId);
+
+        if (!productData) {
+            throw new Error('Product does not exist');
+        }
+
+        // Stock Validation
+        if (product.quantity > productData.stock) {
+            throw new Error('Not enough stock available');
+        }
+
         let cart = await this.cartRepository.getCartByUserId(userId);
 
         // create cart if not exist for user
@@ -32,10 +57,10 @@ class CartService{
                     {
                         productId: product.productId,
                         quantity: product.quantity,
-                        price: product.price
+                        price: productData.price
                     }
                 ],
-                totalPrice: product.price * product.quantity
+                totalPrice: productData.price * product.quantity
             });
             return cart;
         }
@@ -48,12 +73,13 @@ class CartService{
         if (existingProduct) {
             // ONLY update quantity
             existingProduct.quantity += product.quantity;
+            existingProduct.price = productData.price;
         } else {
             // ➕ add new product
             cart.items.push({
                 productId: product.productId,
                 quantity: product.quantity,
-                price: product.price
+                price: productData.price
             });
         }
 
