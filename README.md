@@ -61,4 +61,7 @@ JWT_SECRET=your_secret_key
 PRODUCT_SERVICE_URL=http://localhost:5009
 
 ### Run the server
-npm start
+- npm start
+
+### axios package
+- used axios to fetch real price of products from PRODUCT-SERVICE
