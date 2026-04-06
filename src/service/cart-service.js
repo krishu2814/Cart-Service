@@ -26,7 +26,7 @@ class CartService{
 
     // Add to cart
     async addToCart(userId, product) {
-        console.log(`User ${userId} adding product ${product.productId}`);
+        // console.log(`User ${userId} adding product ${product.productId}`);
 
         if (!product.productId || !product.quantity) {
             throw new Error('Invalid product data');
