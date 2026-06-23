@@ -14,18 +14,32 @@ class CartService{
         }, 0);  
     }
 
-    async getProductDetails(productId) {
+    async getProductDetails(productId, token) {
         try {
-            const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/v1/products/${productId}`);
+            console.log("Calling Product Service...");
+            console.log("URL:", `${PRODUCT_SERVICE_URL}/api/v1/${productId}`);
+            console.log("Token:", token);
+            const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/v1/${productId}`, {
+                headers: {
+                    'Authorization': token
+                }
+            });
+            console.log("Product Service Response:", response.data);
 
             return response.data.data;
         } catch (error) {
-            throw new Error('Product not found from Product Service');
+            console.log("========== PRODUCT SERVICE ERROR ==========");
+            console.log("Status:", error.response?.status);
+            console.log("Response:", error.response?.data);
+            console.log("Message:", error.message);
+
+            throw error;
         }
+        
     }
 
     // Add to cart
-    async addToCart(userId, product) {
+    async addToCart(userId, product, token) {
         // console.log(`User ${userId} adding product ${product.productId}`);
 
         if (!product.productId || !product.quantity) {
@@ -36,7 +50,8 @@ class CartService{
             throw new Error('Quantity must be greater than 0');
         }
 
-        const productData = await this.getProductDetails(product.productId);
+        const productData = await this.getProductDetails(product.productId, token);
+        console.log("Product data from Product Service:", productData);
 
         if (!productData) {
             throw new Error('Product does not exist');
@@ -128,6 +143,10 @@ class CartService{
         cart.totalPrice = this.calculateTotalPrice(cart);
 
         return await cart.save();
+    }
+
+    async getAllCarts() {
+        return await this.cartRepository.getAllCarts();
     }
 
 }

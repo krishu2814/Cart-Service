@@ -6,9 +6,10 @@ const router = express.Router();
 const CartController = require('../../controller/cart-controller');
 const cartController = new CartController();
 
-router.post('/cart', Authentication, cartController.addToCart.bind(cartController));
-router.get('/cart', Authentication, cartController.getCart.bind(cartController));
-router.patch('/cart/:productId', Authentication, cartController.updateCart.bind(cartController));
-router.delete('/cart', Authentication, cartController.clearCart.bind(cartController));
+router.post('/', Authentication, cartController.addToCart.bind(cartController));
+router.get('/:id', Authentication, cartController.getCart.bind(cartController));
+router.get('/', Authentication, cartController.getAllCarts.bind(cartController));
+router.patch('/:productId', Authentication, cartController.updateCart.bind(cartController));
+router.delete('/', Authentication, cartController.clearCart.bind(cartController));
 
 module.exports = router;
