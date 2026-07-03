@@ -8,10 +8,10 @@ class CartController {
     async addToCart(req, res) {
         try {
             const userId = req.user.id; // Assuming user ID is available in req.user -> Authentication
-            console.log("User ID from token:", userId);
-            console.log(req.body);
+            // console.log("User ID from token:", userId);
+            // console.log(req.body);
             const token = req.headers['authorization']; // Extract token from Authorization header
-            console.log("Token from header:", token);
+            // console.log("Token from header:", token);
             const cartItem = await this.cartService.addToCart(userId, req.body, token);
             return res.status(200).json({
                 success: true,
@@ -75,9 +75,9 @@ class CartController {
     async getCart(req, res) {
         try {
             const userId = req.user.id;
-            console.log("User ID from token:", userId);
+            // console.log("User ID from token:", userId);
             const cart = await this.cartService.getCartByUserId(userId);
-            console.log("Cart retrieved:", cart);
+            // console.log("Cart retrieved:", cart);
             return res.status(200).json({
                 success: true,
                 message: 'Cart retrieved successfully',

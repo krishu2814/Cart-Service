@@ -2,6 +2,8 @@ const express = require('express');
 const { PORT } = require('./config/serverConfig');
 const connectDB = require('./config/database');
 const apiRoutes = require('./routes/index');
+const { connectRabbitMQ } = require('./config/rabbitmq');
+const cartConsumer = require('./consumer/cart-consumer');
 
 const app = express();
 
@@ -11,10 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api', apiRoutes);
 
-const setUpAndStartServer = () => {
+const setUpAndStartServer = async () => {
 
-    connectDB();
-    
+    await connectRabbitMQ();
+    await cartConsumer();
+    await connectDB();
+
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });

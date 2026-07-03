@@ -16,7 +16,9 @@ class CartRepository {
     }
 
     async clearCart(userId) {
-        return await Cart.findOneAndDelete({ userId });
+        return await Cart.findOneAndDelete({ userId },
+            { $set: { items: [],totalPrice: 0 }}, { new: true }
+        );
     }
 
     async getAllCarts() {
