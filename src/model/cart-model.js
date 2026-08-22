@@ -9,13 +9,14 @@ const cartSchema = new mongoose.Schema({
     items: [
         {
             productId: {
-                type: mongoose.Schema.Types.ObjectId,
+                type: String,
                 required: true,
             },
             quantity: {
                 type: Number,
                 required: true,
-                min: 1,
+                min: [1, 'Quantity cannot be less than 1'],
+                default: 1,
             },
             price: {
                 type: Number,
