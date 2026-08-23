@@ -1,37 +1,48 @@
-const { getChannel } = require('../config/rabbitmq');
+const { getChannel, EXCHANGE_NAME } = require("../config/rabbitmq");
 
-const startConsumer = async (queue, handler) => {
-    const channel = getChannel();
+const startConsumer = async (queueName, routingKey, handler) => {
+  const channel = getChannel();
 
-    await channel.assertQueue(queue, {
-        durable: true
-    });
+  await channel.assertExchange(EXCHANGE_NAME, "topic", {
+    durable: true,
+  });
 
-    // console.log(`Listening on ${queue}`);
+  await channel.assertQueue(queueName, {
+    durable: true,
+  });
 
-    channel.consume(queue, async (msg) => {
+  await channel.bindQueue(queueName, EXCHANGE_NAME, routingKey);
 
-        if (!msg) return;
+  await channel.prefetch(1);
 
-        try {
+  console.log(`Listening on ${queueName}`);
+  console.log(`Routing key: ${routingKey}`);
 
-            const data = JSON.parse(msg.content.toString());
+  await channel.consume(
+    queueName,
+    async (message) => {
+      if (!message) return;
 
-            await handler(data);
+      try {
+        const data = JSON.parse(message.content.toString());
 
-            channel.ack(msg);
+        await handler(data);
 
-        } catch (error) {
+        channel.ack(message);
 
-            // console.error(`Error processing ${queue}:`, error.message);
+        console.log(`${routingKey} processed successfully`);
+      } catch (error) {
+        console.error(`${routingKey} processing failed:`, error.message);
 
-            // Later replace with DLQ
-            channel.nack(msg, false, false);
-        }
-
-    });
+        channel.nack(message, false, false);
+      }
+    },
+    {
+      noAck: false,
+    },
+  );
 };
 
 module.exports = {
-    startConsumer
+  startConsumer,
 };
