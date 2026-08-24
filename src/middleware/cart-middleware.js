@@ -43,7 +43,13 @@ const isAuthenticUser = (req, res, next) => {
         // console.log(decodedToken);
         
         // attach user
-        req.user = decodedToken;
+        req.user = {
+            id: decodedToken.id || decodedToken.userId || decodedToken._id,
+            userId: decodedToken.id || decodedToken.userId || decodedToken._id,
+            _id: decodedToken.id || decodedToken.userId || decodedToken._id,
+            email: decodedToken.email,
+            role: decodedToken.role
+        };
 
         next();
 
