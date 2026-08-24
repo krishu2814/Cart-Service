@@ -5,24 +5,34 @@ class CartController {
         this.cartService = new CartService();
     }
 
+    _getErrorStatus(errorMessage) {
+        if (!errorMessage) return 500;
+        const msg = errorMessage.toLowerCase();
+        if (msg.includes('not found') || msg.includes('does not exist')) {
+            return 404;
+        }
+        if (msg.includes('required') || msg.includes('invalid') || msg.includes('not enough stock') || msg.includes('cannot') || msg.includes('positive integer')) {
+            return 400;
+        }
+        return 500;
+    }
+
     async addToCart(req, res) {
         try {
-            const userId = req.user.id; // Assuming user ID is available in req.user -> Authentication
-            // console.log("User ID from token:", userId);
-            // console.log(req.body);
-            const token = req.headers['authorization']; // Extract token from Authorization header
-            // console.log("Token from header:", token);
+            const userId = req.user.id;
+            const token = req.headers['authorization'];
             const cartItem = await this.cartService.addToCart(userId, req.body, token);
             return res.status(200).json({
                 success: true,
                 message: 'Product added to cart successfully',
                 data: cartItem,
                 err: {}
-            })
+            });
         } catch (error) {
-            return res.status(500).json({
+            const status = this._getErrorStatus(error.message);
+            return res.status(status).json({
                 success: false,
-                message: 'Failed to add product to cart',
+                message: error.message || 'Failed to add product to cart',
                 data: {},
                 err: error.message
             });
@@ -43,9 +53,33 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            return res.status(500).json({
+            const status = this._getErrorStatus(error.message);
+            return res.status(status).json({
                 success: false,
-                message: 'Failed to update cart',
+                message: error.message || 'Failed to update cart',
+                data: {},
+                err: error.message
+            });
+        }
+    }
+
+    async removeItem(req, res) {
+        try {
+            const userId = req.user.id;
+            const { productId } = req.params;
+
+            const updatedCart = await this.cartService.removeItem(userId, productId);
+            return res.status(200).json({
+                success: true,
+                message: 'Item removed from cart successfully',
+                data: updatedCart,
+                err: {}
+            });
+        } catch (error) {
+            const status = this._getErrorStatus(error.message);
+            return res.status(status).json({
+                success: false,
+                message: error.message || 'Failed to remove item from cart',
                 data: {},
                 err: error.message
             });
@@ -75,9 +109,7 @@ class CartController {
     async getCart(req, res) {
         try {
             const userId = req.user.id;
-            // console.log("User ID from token:", userId);
             const cart = await this.cartService.getCartByUserId(userId);
-            // console.log("Cart retrieved:", cart);
             return res.status(200).json({
                 success: true,
                 message: 'Cart retrieved successfully',
@@ -111,8 +143,7 @@ class CartController {
                 err: error.message
             });
         }
-    }   
-
+    }
 }
 
 module.exports = CartController;
