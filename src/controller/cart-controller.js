@@ -17,7 +17,7 @@ class CartController {
         return 500;
     }
 
-    async addToCart(req, res) {
+    async addToCart(req, res, next) {
         try {
             const userId = req.user.id;
             const token = req.headers['authorization'];
@@ -29,17 +29,11 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            const status = this._getErrorStatus(error.message);
-            return res.status(status).json({
-                success: false,
-                message: error.message || 'Failed to add product to cart',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 
-    async updateCart(req, res) {
+    async updateCart(req, res, next) {
         try {
             const userId = req.user.id;
             const productId = req.params.productId || req.body.productId;
@@ -53,17 +47,11 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            const status = this._getErrorStatus(error.message);
-            return res.status(status).json({
-                success: false,
-                message: error.message || 'Failed to update cart',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 
-    async removeItem(req, res) {
+    async removeItem(req, res, next) {
         try {
             const userId = req.user.id;
             const productId = req.params.productId || req.body.productId;
@@ -76,17 +64,11 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            const status = this._getErrorStatus(error.message);
-            return res.status(status).json({
-                success: false,
-                message: error.message || 'Failed to remove item from cart',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 
-    async clearCart(req, res) {
+    async clearCart(req, res, next) {
         try {
             const userId = req.user.id;
             await this.cartService.clearCart(userId);
@@ -97,16 +79,11 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to clear cart',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 
-    async getCart(req, res) {
+    async getCart(req, res, next) {
         try {
             const userId = req.user.id;
             const cart = await this.cartService.getCartByUserId(userId);
@@ -117,16 +94,11 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve cart',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 
-    async getAllCarts(req, res) {
+    async getAllCarts(req, res, next) {
         try {
             const carts = await this.cartService.getAllCarts();
             return res.status(200).json({
@@ -136,12 +108,7 @@ class CartController {
                 err: {}
             });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve carts',
-                data: {},
-                err: error.message
-            });
+            next(error);
         }
     }
 }
