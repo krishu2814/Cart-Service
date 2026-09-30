@@ -61,9 +61,30 @@ class CartService {
             throw new Error('Quantity must be a positive integer');
         }
 
-        const productData = await this.getProductDetails(product.productId, token);
+        let productData = null;
+        try {
+            productData = await this.getProductDetails(product.productId, token);
+        } catch (error) {
+            if (product.name && typeof product.price === 'number') {
+                productData = {
+                    name: product.name,
+                    price: product.price,
+                    image: product.image || ''
+                };
+            } else {
+                throw error;
+            }
+        }
         if (!productData) {
-            throw new Error('Product does not exist');
+            if (product.name && typeof product.price === 'number') {
+                productData = {
+                    name: product.name,
+                    price: product.price,
+                    image: product.image || ''
+                };
+            } else {
+                throw new Error('Product does not exist');
+            }
         }
 
         // Check existing cart
